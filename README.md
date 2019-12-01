@@ -6,7 +6,8 @@
 3. data文件夹存放上传和下载的数据
 4. crt文件夹存放了ssl证书和公钥
 ## 目前思路
-    将所有的处理分为file和action，action执行相应的功能，file处理页面，所有的请求走default_cb，由该函数负责分发至file_cdn()和action_cdn()中，file_cdn和action_cdn()分发至具体的处理函数。
+    将所有的处理分为file和action，action执行相应的功能，file处理页面，所有的请求走default_cb， 
+    由该函数负责分发至file_cdn()和action_cdn()中，file_cdn和action_cdn()分发至具体的处理函数。
 ## 功能
 ### 已经实现的功能
 1. https加密通信
