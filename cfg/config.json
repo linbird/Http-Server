@@ -1,0 +1,24 @@
+{
+	"server" : {
+	   "port" : 8000,
+	   "private_key" : "crt/server-private-key.pem",
+	   "certificate" : "crt/server-certificate-chain.pem"
+	},
+	"source" :{
+		"root_path" : "source/"
+	},
+	"data" :{
+		"root_path" : "data/"
+	},
+	"page" :{
+		"default" : "file/html/index.html", 
+		"index" : "login/html/login.html",
+		"login" : "login/",
+		"file"  : "file/",
+		"states": "states/",
+		"test"  : "test/"
+	},
+	"global" :{
+		"root" : "/home/linbird/workspace/https_server/"
+	}
+ }
