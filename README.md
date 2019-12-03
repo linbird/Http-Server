@@ -6,7 +6,7 @@
 3. data文件夹存放上传和下载的数据
 4. crt文件夹存放了ssl证书和公钥
 
-## 需要安装的包与工具（对于空白的ubuntu来说）
+## 需要安装的包与工具（对于新的ubuntu来说）
     sudo apt-get install openssl
     sudo apt-get install libssl-dev
     sudo apt-get install libevent-dev
