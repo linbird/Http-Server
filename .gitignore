@@ -66,4 +66,4 @@ build/*
 data/*
 
 # crt
- crt/*
+crt/*
