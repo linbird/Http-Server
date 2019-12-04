@@ -79,7 +79,7 @@ serve_some_https (void)
     }
 	
     set_for_https(http);
-	evhttp_set_gencb (http, default_cb, NULL);
+	evhttp_set_gencb(http, default_cb, NULL);
 
     if(! (handle = evhttp_bind_socket_with_handle (http, "0.0.0.0", config.port)))    { 
         fprintf (stderr, "couldn't bind to port %d. Exiting.\n", config.port);
