@@ -3,6 +3,8 @@
 #include <openssl/crypto.h>
 #include "my_config.h"
 #include <unistd.h>
+#define BLOCK_SIZE 1024
+
 extern CONF_INFO config;
 
 std::map<std::string, std::string> 
@@ -75,13 +77,11 @@ auth(struct evhttp_request *req){
                 boost::uuids::uuid a_uuid = boost::uuids::random_generator()(); 
                 std::string uuid_string = boost::uuids::to_string(a_uuid);
                 std::string cookie = "UUID=" + uuid_string + ";Path=/";
-                struct evbuffer *buf = evbuffer_new();
-                if (buf == NULL) 
-                    return;
-                std::string head_tail = "text/html; charset=UTF-8";
-                evhttp_add_header(evhttp_request_get_output_headers(req), "Content-Type", head_tail.c_str());
+                // struct evbuffer *buf = evbuffer_new();
+                // if (buf == NULL) 
+                //     return 0;
                 evhttp_add_header(evhttp_request_get_output_headers(req), "Set-Cookie", cookie.c_str());
-                evhttp_add_header(evhttp_request_get_output_headers(req), "Connection", "Keep-Alive");
+                std::string head_tail = "text/html; charset=UTF-8";
                 return 1;
             }else
                 return 0;
@@ -127,13 +127,50 @@ load_file(const char * filename){
 void 
 file_download(struct evhttp_request *req){
     struct evbuffer *buf = evhttp_request_get_input_buffer (req);
-    evbuffer_add(buf, "", -1);    /* NUL-terminate the buffer */
-    std::string head_info((char *)evbuffer_pullup (buf, -1));
-    std::string filename;
+    // evbuffer_add(buf, "", -1);    /* NUL-terminate the buffer */
+    // std::string head_info((char *)evbuffer_pullup (buf, -1));
+    // std::string filename = "skulshady_gcam_5.1.018_Mod_v5.1_manual.apk";
+    std::string filename = "2019-07-23-165628.webm";
     std::string path = config.root + config.data_root + filename;
     std::cout << "下载读出:" << path << std::endl;
+    evhttp_add_header(evhttp_request_get_output_headers(req), "Content-Type", "video/webm");
+    // evhttp_add_header(evhttp_request_get_output_headers(req), "Connection", "Keep-Alive");
+    // evhttp_add_header(evhttp_request_get_output_headers(req), "Transfer-Encoding", "chunked");
 
+    struct conn_ctx *cctx = (struct conn_ctx *) malloc(sizeof(struct conn_ctx));
+    cctx->req = req;
+    cctx->conn = evhttp_request_get_connection(req);
+    // std::fstream file(path);
+    cctx->file = fopen(path.c_str(), "r");
+    if(cctx->file == nullptr){
+        std::cout << "打开文件失败" << std::endl;
+    }
+    evhttp_send_reply_start(req, 200, "OK");
+    return reply_chunk_transfer(cctx->conn, cctx);
 }
+
+void 
+reply_chunk_transfer(struct evhttp_connection *conn, void *ctx)
+{
+    struct conn_ctx *cctx = (struct conn_ctx *)ctx;
+    if(feof(cctx->file) != 0){
+        evhttp_send_reply_end(cctx->req);
+        fclose(cctx->file);
+        free(cctx);
+        return;
+    }else{
+        struct evbuffer *buf = evbuffer_new();
+        char *dummy = (char *) malloc(BLOCK_SIZE * sizeof(char));  // dynamically create the data in real cases.
+        fread(dummy, sizeof(char), BLOCK_SIZE, cctx->file);
+        std::cout << "chunk" << std::endl
+            << dummy << std::endl;
+	    evbuffer_add(buf, dummy, BLOCK_SIZE);
+        evhttp_send_reply_chunk_with_cb(cctx->req, buf, reply_chunk_transfer, cctx);
+        evbuffer_free(buf);
+        free(dummy);
+    }
+}
+
 
 void 
 file_upload(struct evhttp_request *req){
@@ -231,14 +268,18 @@ default_cb(struct evhttp_request *req, void *arg){
     // printf("%s\n", evhttp_find_header(kv, "SetCookie"));
     // struct evbuffer *evb = NULL;
     std::string URI(evhttp_request_get_uri (req));
-    if(auth(req) == 1)
-        return send_page(req, config.root+config.source_root+config.default_page);
-    else{
+    // int valid = auth(req);
+    if(auth(req) == 1){
+        // return send_page(req, config.root+config.source_root+config.default_page);
+    // else{
+                    std::cout << "请求地址  " << URI.size() << std::endl;
         if(URI.size() <= 1)
-            return send_page(req, (config.root + config.source_root + config.index_page));
-        else{    
+            return send_page(req, (config.root + config.source_root + config.default_page));
+        else{
             std::vector<std::string> sub_paths;
             boost::split(sub_paths, URI, boost::is_any_of( ",/." ), boost::token_compress_on);
+            for(auto it : sub_paths)
+                std::cout << "1  " << it << std::endl;
             if(sub_paths[1] == "action")
                 return action_cdn(req);
             else if(sub_paths[1] == "file")
@@ -246,7 +287,8 @@ default_cb(struct evhttp_request *req, void *arg){
             else
                 return send_page(req, 403);
         }
-    }
+    }else
+        return send_page(req, config.root+config.source_root+config.index_page);
 }
 
 void 
