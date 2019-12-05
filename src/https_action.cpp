@@ -204,7 +204,7 @@ file_upload(struct evhttp_request *req){
                 copy(Base64DecodeIterator(it->begin()), 
                         Base64DecodeIterator(it->end()), 
                         std::ostream_iterator<char>(data));
-            }catch ( ... ) {
+            }catch (...){
                 std::cout << "base64 解密错误" << std::endl;
                 return;
             }
