@@ -30,6 +30,7 @@ SET(CXX_FLAGS
  -levent_openssl
  -lstdc++
  -lboost_system
+ -lboost_regex
  )
 
 SET(SRCS
@@ -55,4 +56,4 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 #find_library(LIBPATHS  ${PROJECT_BINARY_DIR}/lib)  
 
 add_executable(server main.cpp)
-target_link_libraries(server https_server boost_system ssl pthread event m crypto event_openssl stdc++ jsoncpp)
+target_link_libraries(server https_server boost_system ssl pthread event m crypto event_openssl stdc++ jsoncpp boost_regex)
