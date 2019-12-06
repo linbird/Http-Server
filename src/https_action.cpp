@@ -191,6 +191,7 @@ file_download(struct evhttp_request *req){
     std::string filename = "2019-07-23-165628.webm";
     std::string path = config.root + config.data_root + filename;
     std::cout << "下载读出:" << path << std::endl;
+    // evhttp_add_header(evhttp_request_get_output_headers(req), "Content-Type", "text/plain");
     evhttp_add_header(evhttp_request_get_output_headers(req), "Content-Type", "video/webm");
     // evhttp_add_header(evhttp_request_get_output_headers(req), "Connection", "Keep-Alive");
     // evhttp_add_header(evhttp_request_get_output_headers(req), "Transfer-Encoding", "chunked");
@@ -219,6 +220,7 @@ reply_chunk_transfer(struct evhttp_connection *conn, void *ctx)
     }else{
         struct evbuffer *buf = evbuffer_new();
         char *dummy = (char *) malloc(BLOCK_SIZE * sizeof(char));  // dynamically create the data in real cases.
+        memset(dummy, 0, BLOCK_SIZE * sizeof(char));
         fread(dummy, sizeof(char), BLOCK_SIZE, cctx->file);
         // std::cout << "chunk" << std::endl
         //     << dummy << std::endl;
@@ -233,6 +235,8 @@ reply_chunk_transfer(struct evhttp_connection *conn, void *ctx)
         }
         std::string encode = data.str();
         evbuffer_add(buf, encode.c_str(), encode.length());
+        // evbuffer_add(buf, dummy, strlen(dummy));
+        // std::cout << "传输数据块" << std::endl << dummy << "结束块" << std::endl;
         std::cout << "base64加密数据块" << std::endl << encode << std::endl;
         evhttp_send_reply_chunk_with_cb(cctx->req, buf, reply_chunk_transfer, cctx);
         evbuffer_free(buf);
@@ -253,7 +257,6 @@ file_upload(struct evhttp_request *req){
     // std::cout << "数据内容" << t_dat << std::endl;
     std::vector<std::string> datas;
     boost::split(datas, base64code, boost::is_any_of( "&" ), boost::token_compress_on);
-// //"(https?://www.ttufo.com/.+/.+/.+)(_\\d+)(.html?)"
 //     boost::regex filename_expression("filename=");   
 //     boost::regex content_expression("(base64*)");   
 //     boost::cmatch filename_match;
