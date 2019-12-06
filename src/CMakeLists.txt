@@ -23,14 +23,14 @@ SET(CXX_FLAGS
  -Wno-unused-parameter
  -std=c++11
  -lpthread
- -levent
- -lm
- -lssl
- -lcrypto
- -levent_openssl
- -lstdc++
- -lboost_system
- -lboost_regex
+ # -levent
+ # -lm
+ # -lssl
+ # -lcrypto
+ # -levent_openssl
+ # -lstdc++
+ # -lboost_system
+ # -lboost_regex
  )
 
 SET(SRCS
